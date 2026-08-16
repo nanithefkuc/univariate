@@ -56,8 +56,10 @@ impl KaratsubaScratch {
         let mut slot = core::mem::take(&mut self.sums[index]);
         if slot.len() < bytes {
             slot.resize(bytes, 0);
+        } else {
+            slot.truncate(bytes);
         }
-        slot[..bytes].fill(0);
+        slot.fill(0);
         slot
     }
 
@@ -156,6 +158,10 @@ fn karatsuba_into<F: FieldKernels>(
 ) {
     let a_count = a.len() / F::BYTES;
     let b_count = b.len() / F::BYTES;
+    if a_count == 0 || b_count == 0 {
+        // The empty product: `dst` is already zeroed by its slot owner.
+        return;
+    }
     if a_count.min(b_count) < KARATSUBA_BASE {
         schoolbook_into::<F>(dst, a, b);
         return;
@@ -168,9 +174,10 @@ fn karatsuba_into<F: FieldKernels>(
     let (a_low, a_high) = a.split_at(a_split);
     let (b_low, b_high) = b.split_at(b_split);
 
-    // z0 and z2 recurse on the external operand slices.
-    let low_len = a_low.len() + b_low.len().saturating_sub(F::BYTES);
-    let high_len = a_high.len() + b_high.len().saturating_sub(F::BYTES);
+    // z0 and z2 recurse on the external operand slices. The empty product
+    // of a vanishing high part is the zero-length buffer.
+    let low_len = (a_low.len() + b_low.len()).saturating_sub(F::BYTES);
+    let high_len = (a_high.len() + b_high.len()).saturating_sub(F::BYTES);
     let mut z0 = scratch.take_product(3 * depth, low_len);
     karatsuba_into::<F>(&mut z0, a_low, b_low, depth + 1, scratch);
     let mut z2 = scratch.take_product(3 * depth + 1, high_len);

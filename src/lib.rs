@@ -43,6 +43,7 @@
 //! | --- | --- |
 //! | default (`std`, `simd`, `fft`) | full ring, transforms, root machinery |
 //! | `--no-default-features` | `no_std` core ring, gcd/EEA, division, Chien, Horner, power series; no `butterfly-fft` |
+//! | `fft` without `std` | transform composition available in `no_std` builds |
 //! | `parallel` | off-by-default placeholder for batch-axis parallelism |
 //! | `internals` | unstable benchmarking surface, no compatibility promise |
 

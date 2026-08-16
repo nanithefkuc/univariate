@@ -17,8 +17,10 @@ std = ["fgf/std"]
 simd = ["std", "fgf/simd"]
 # Structured-domain evaluation/interpolation composes butterfly-fft (which
 # carries its own SIMD `unsafe`). Most L1 consumers want it; a transform-free
-# consumer builds --no-default-features to drop it.
-fft = ["std", "butterfly-fft/std", "butterfly-fft/simd"]
+# consumer builds --no-default-features to drop it. Works without `std`:
+# butterfly-fft's core is no_std-capable, and so is everything this feature
+# gates here.
+fft = ["dep:butterfly-fft"]
 # Optional batch/symbol-axis parallelism. Off by default; must not enter
 # default or no-std builds.
 parallel = ["std", "dep:rayon"]
