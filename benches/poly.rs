@@ -1,7 +1,7 @@
 //! Product, division, gcd/EEA, series, root, and evaluation benchmarks.
 
 use criterion::{Criterion, criterion_group, criterion_main};
-use fgf::{Gf8, Gf16};
+use fgf::{Gf8B, Gf16};
 use univariate::Polynomial;
 
 fn noise_poly<F: fgf::kernel::FieldKernels>(len: usize, seed: u64) -> Polynomial<F> {
@@ -22,8 +22,8 @@ fn noise_poly<F: fgf::kernel::FieldKernels>(len: usize, seed: u64) -> Polynomial
 fn multiply(c: &mut Criterion) {
     let mut group = c.benchmark_group("multiply");
     for len in [16_usize, 64, 256, 1024, 2048] {
-        let left: Polynomial<Gf8> = noise_poly(len, 0x5EED_0001);
-        let right: Polynomial<Gf8> = noise_poly(len, 0x5EED_0002);
+        let left: Polynomial<Gf8B> = noise_poly(len, 0x5EED_0001);
+        let right: Polynomial<Gf8B> = noise_poly(len, 0x5EED_0002);
         group.bench_function(format!("schoolbook/{len}"), |b| {
             b.iter(|| {
                 left.multiply_truncated(&right, 2 * len - 1)

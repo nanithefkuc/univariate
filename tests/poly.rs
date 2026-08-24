@@ -2,7 +2,7 @@
 
 use fgf::field::{Elem, Field};
 use fgf::kernel::FieldKernels;
-use fgf::{FanPaar8, FanPaar16, FanPaar32, FanPaar64, Gf8, Gf16, Gf32, Gf64};
+use fgf::{FanPaar8, FanPaar16, FanPaar32, FanPaar64, Gf8B, Gf16, Gf32, Gf64};
 use univariate::{Polynomial, PolynomialError, karatsuba_multiply};
 
 mod oracles;
@@ -136,8 +136,8 @@ fn assert_ring_identities<F: FieldKernels>() {
 
 #[test]
 fn ring_identities_hold_across_every_field() {
-    assert_ring_identities::<Gf8>();
-    assert_ring_identities::<Gf8>();
+    assert_ring_identities::<Gf8B>();
+    assert_ring_identities::<Gf8B>();
     assert_ring_identities::<Gf16>();
     assert_ring_identities::<Gf32>();
     assert_ring_identities::<Gf64>();
@@ -182,8 +182,8 @@ fn zero_and_unit_edges() {
 #[test]
 fn karatsuba_matches_schoolbook_at_every_size_bucket() {
     for len in [16, 17, 31, 47, 48, 49, 64, 96, 128, 200, 300] {
-        let left = noise_poly::<Gf8>(len, 0x5EED_0040);
-        let right = noise_poly::<Gf8>(len.saturating_sub(1).max(1), 0x5EED_0041);
+        let left = noise_poly::<Gf8B>(len, 0x5EED_0040);
+        let right = noise_poly::<Gf8B>(len.saturating_sub(1).max(1), 0x5EED_0041);
         let schoolbook = naive_multiply(&left, &right);
         assert_eq!(
             karatsuba_multiply(&left, &right).expect("karatsuba"),
@@ -228,9 +228,9 @@ fn division_error_paths_preserve_state() {
 
 #[test]
 fn packed_buffer_round_trips() {
-    let p = noise_poly::<Gf8>(9, 0x5EED_0060);
+    let p = noise_poly::<Gf8B>(9, 0x5EED_0060);
     let packed = p.as_packed().to_vec();
-    let rebuilt = Polynomial::<Gf8>::from_packed(packed).expect("aligned");
+    let rebuilt = Polynomial::<Gf8B>::from_packed(packed).expect("aligned");
     assert_eq!(rebuilt, p);
     // A partial trailing element is rejected: only possible with multi-byte
     // elements, so use a 2-byte field.
@@ -241,6 +241,6 @@ fn packed_buffer_round_trips() {
     // A trailing zero coefficient never survives construction.
     let mut padded = p.as_packed().to_vec();
     padded.extend_from_slice(&[0; 2]);
-    let normalized = Polynomial::<Gf8>::from_packed(padded).expect("aligned");
+    let normalized = Polynomial::<Gf8B>::from_packed(padded).expect("aligned");
     assert_eq!(normalized, p);
 }

@@ -3,7 +3,7 @@
 
 use fgf::field::Elem;
 use fgf::kernel::FieldKernels;
-use fgf::{Gf8, Gf16};
+use fgf::{Gf8B, Gf16};
 use proptest::prelude::*;
 use univariate::Polynomial;
 
@@ -42,9 +42,9 @@ proptest! {
 
     #[test]
     fn multiplication_is_commutative_and_distributive_gf8(a in coefficients_strategy(24), b in coefficients_strategy(24), c in coefficients_strategy(24)) {
-        let a = poly_from_bytes::<Gf8>(&a, 1);
-        let b = poly_from_bytes::<Gf8>(&b, 1);
-        let c = poly_from_bytes::<Gf8>(&c, 1);
+        let a = poly_from_bytes::<Gf8B>(&a, 1);
+        let b = poly_from_bytes::<Gf8B>(&b, 1);
+        let c = poly_from_bytes::<Gf8B>(&c, 1);
         prop_assert_eq!(a.multiply(&b).unwrap(), b.multiply(&a).unwrap());
         // a·(b + c) == a·b + a·c.
         let left = a.multiply(&b.add(&c).unwrap()).unwrap();
@@ -58,8 +58,8 @@ proptest! {
 
     #[test]
     fn division_identity_holds_gf8(a in coefficients_strategy(28), b in coefficients_strategy(12)) {
-        let a = poly_from_bytes::<Gf8>(&a, 1);
-        let b = poly_from_bytes::<Gf8>(&b, 1);
+        let a = poly_from_bytes::<Gf8B>(&a, 1);
+        let b = poly_from_bytes::<Gf8B>(&b, 1);
         proptest::prop_assume!(!b.is_zero());
         let (q, r) = a.div_rem(&b).unwrap();
         prop_assert!(r.degree().is_none_or(|degree| degree < b.degree().unwrap()));
@@ -86,8 +86,8 @@ proptest! {
 
     #[test]
     fn karatsuba_is_byte_identical_to_schoolbook_gf8(a in coefficients_strategy(260), b in coefficients_strategy(260)) {
-        let a = poly_from_bytes::<Gf8>(&a, 1);
-        let b = poly_from_bytes::<Gf8>(&b, 1);
+        let a = poly_from_bytes::<Gf8B>(&a, 1);
+        let b = poly_from_bytes::<Gf8B>(&b, 1);
         proptest::prop_assume!(!a.is_zero() && !b.is_zero());
         prop_assert_eq!(
             univariate::karatsuba_multiply(&a, &b).unwrap(),
@@ -97,7 +97,7 @@ proptest! {
 
     #[test]
     fn chien_and_equal_degree_root_sets_agree_gf8(a in coefficients_strategy(10)) {
-        let a = poly_from_bytes::<Gf8>(&a, 1);
+        let a = poly_from_bytes::<Gf8B>(&a, 1);
         proptest::prop_assume!(!a.is_zero());
         let chien = univariate::chien_roots(&a).unwrap();
         let split = univariate::base_field_roots(&a).unwrap();
@@ -122,7 +122,7 @@ proptest! {
 
     #[test]
     fn series_inverse_is_self_inverse_gf8(a in coefficients_strategy(40), t in 1usize..40) {
-        let a = poly_from_bytes::<Gf8>(&a, 1);
+        let a = poly_from_bytes::<Gf8B>(&a, 1);
         proptest::prop_assume!(!a.coefficient(0).is_zero());
         let inverse = a.inverse_mod_x_power(t).unwrap();
         let product = a.multiply_truncated(&inverse, t).unwrap();

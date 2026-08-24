@@ -5,7 +5,7 @@
 use butterfly_fft::core::kernel::ButterflyKernels;
 use fgf::field::Elem;
 use fgf::kernel::FieldKernels;
-use fgf::{Gf8, Gf16};
+use fgf::{Gf8B, Gf16};
 use univariate::{
     DomainError, DomainScratch, EvaluationDomain, MultipointScratch, NewtonBasis, Polynomial,
     interpolate_lagrange, interpolate_newton,
@@ -187,29 +187,29 @@ fn distinct_points<F: FieldKernels>(len: usize, seed: u64) -> Vec<F::Elem> {
 
 #[test]
 fn multipoint_matches_horner_across_fields() {
-    assert_multipoint::<Gf8>();
-    assert_multipoint::<Gf8>();
+    assert_multipoint::<Gf8B>();
+    assert_multipoint::<Gf8B>();
     assert_multipoint::<Gf16>();
 }
 
 #[test]
 fn interpolation_routes_agree_across_fields() {
-    assert_interpolation::<Gf8>();
-    assert_interpolation::<Gf8>();
+    assert_interpolation::<Gf8B>();
+    assert_interpolation::<Gf8B>();
     assert_interpolation::<Gf16>();
 }
 
 #[test]
 fn newton_basis_reuse_across_fields() {
-    assert_newton_basis_reuse::<Gf8>();
+    assert_newton_basis_reuse::<Gf8B>();
     assert_newton_basis_reuse::<Gf16>();
 }
 
 #[cfg(feature = "fft")]
 #[test]
 fn domain_paths_agree_across_fields() {
-    assert_domain_paths::<Gf8>();
-    assert_domain_paths::<Gf8>();
+    assert_domain_paths::<Gf8B>();
+    assert_domain_paths::<Gf8B>();
     assert_domain_paths::<Gf16>();
 }
 
@@ -218,7 +218,7 @@ fn domain_paths_agree_across_fields() {
 fn domain_paths_agree_across_fields() {
     // Without the transform the same domain objects evaluate through the
     // arbitrary paths; the results are identical by construction.
-    assert_domain_paths_nofft::<Gf8>();
+    assert_domain_paths_nofft::<Gf8B>();
     assert_domain_paths_nofft::<Gf16>();
 }
 
@@ -272,14 +272,14 @@ fn subspace_transform_matches_plain_evaluation() {
 
 #[test]
 fn multipoint_scratch_reuse_is_exact() {
-    let mut scratch = MultipointScratch::<Gf8>::new();
+    let mut scratch = MultipointScratch::<Gf8B>::new();
     let mut values = Vec::new();
-    let polynomial = noise_poly::<Gf8>(30, 0x3C00);
-    let points = distinct_points::<Gf8>(40, 0x3C10);
+    let polynomial = noise_poly::<Gf8B>(30, 0x3C00);
+    let points = distinct_points::<Gf8B>(40, 0x3C10);
     univariate::evaluate_multipoint_into(&polynomial, &points, &mut scratch, &mut values)
         .expect("warm-up");
     let warmed = values.clone();
-    let other = noise_poly::<Gf8>(25, 0x3C20);
+    let other = noise_poly::<Gf8B>(25, 0x3C20);
     univariate::evaluate_multipoint_into(&other, &points, &mut scratch, &mut values)
         .expect("reuse");
     assert_eq!(values, other.evaluate_many(&points).expect("horner"));

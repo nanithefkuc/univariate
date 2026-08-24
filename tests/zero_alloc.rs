@@ -6,7 +6,7 @@ use std::cell::Cell;
 use std::sync::atomic::{AtomicUsize, Ordering};
 
 use fgf::field::Field;
-use fgf::{Gf8, Gf16};
+use fgf::{Gf8B, Gf16};
 use univariate::{
     ChienScratch, DomainScratch, EvaluationDomain, FieldRootScratch, MultipointScratch, Polynomial,
     RothRuckensteinLimits, RothRuckensteinScratch, truncated_eea,
@@ -66,13 +66,13 @@ fn noise<F: fgf::kernel::FieldKernels>(len: usize, seed: u64) -> Polynomial<F> {
 
 #[test]
 fn steady_state_paths_do_not_allocate() {
-    let left = noise::<Gf8>(64, 0x51);
-    let right = noise::<Gf8>(48, 0x52);
-    let divisor = noise::<Gf8>(16, 0x53);
-    let mut product = Polynomial::<Gf8>::zero();
-    let mut quotient = Polynomial::<Gf8>::zero();
-    let mut remainder = Polynomial::<Gf8>::zero();
-    let mut square = Polynomial::<Gf8>::zero();
+    let left = noise::<Gf8B>(64, 0x51);
+    let right = noise::<Gf8B>(48, 0x52);
+    let divisor = noise::<Gf8B>(16, 0x53);
+    let mut product = Polynomial::<Gf8B>::zero();
+    let mut quotient = Polynomial::<Gf8B>::zero();
+    let mut remainder = Polynomial::<Gf8B>::zero();
+    let mut square = Polynomial::<Gf8B>::zero();
 
     // Warm every buffer.
     left.multiply_truncated_into(&right, 111, &mut product)
@@ -157,9 +157,9 @@ fn steady_state_paths_do_not_allocate() {
 
     // Roth–Ruckenstein lifting over a fixed geometry.
     let rows = vec![
-        noise::<Gf8>(6, 0x71),
-        noise::<Gf8>(4, 0x72),
-        noise::<Gf8>(3, 0x73),
+        noise::<Gf8B>(6, 0x71),
+        noise::<Gf8B>(4, 0x72),
+        noise::<Gf8B>(3, 0x73),
     ];
     let mut lift_scratch = RothRuckensteinScratch::new();
     let mut lifted = Vec::new();
@@ -229,8 +229,8 @@ fn afft_product_scratch_reuse_does_not_allocate() {
 fn truncated_eea_reports_its_cost_honestly() {
     // The truncated EEA is the allocating form; this test pins that it
     // completes and satisfies its identity, not its allocation profile.
-    let a = noise::<Gf8>(20, 0x91);
-    let b = noise::<Gf8>(14, 0x92);
+    let a = noise::<Gf8B>(20, 0x91);
+    let b = noise::<Gf8B>(14, 0x92);
     let step = truncated_eea(&a, &b, 4).expect("truncated eea");
     let identity = step
         .a_cofactor

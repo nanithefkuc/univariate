@@ -3,7 +3,7 @@
 
 use fgf::field::{Elem, Field};
 use fgf::kernel::FieldKernels;
-use fgf::{Gf8, Gf16};
+use fgf::{Gf8B, Gf16};
 use univariate::roots::element_key;
 use univariate::{
     BaseFieldRoots, Polynomial, RootError, chien_roots, linearized_roots, roth_ruckenstein_roots,
@@ -92,15 +92,15 @@ fn assert_backend_agreement<F: FieldKernels>() {
 
 #[test]
 fn chien_and_equal_degree_agree_across_fields() {
-    assert_backend_agreement::<Gf8>();
-    assert_backend_agreement::<Gf8>();
+    assert_backend_agreement::<Gf8B>();
+    assert_backend_agreement::<Gf8B>();
     assert_backend_agreement::<Gf16>();
 }
 
 #[test]
 fn chien_matches_naive_full_scan() {
     for seed in 0..8 {
-        let polynomial = noise_poly::<Gf8>(7, 0xA000 + seed);
+        let polynomial = noise_poly::<Gf8B>(7, 0xA000 + seed);
         let chien = chien_roots(&polynomial)
             .expect("chien")
             .into_finite()
@@ -161,18 +161,18 @@ fn assert_linearized_agreement<F: FieldKernels>() {
 
 #[test]
 fn linearized_solver_agrees_with_chien() {
-    assert_linearized_agreement::<Gf8>();
-    assert_linearized_agreement::<Gf8>();
+    assert_linearized_agreement::<Gf8B>();
+    assert_linearized_agreement::<Gf8B>();
     assert_linearized_agreement::<Gf16>();
 }
 
 #[test]
 fn linearized_zero_polynomial_covers_the_field() {
-    let all = linearized_roots(&Polynomial::<Gf8>::zero(), <Gf8 as Field>::Elem::ZERO)
+    let all = linearized_roots(&Polynomial::<Gf8B>::zero(), <Gf8B as Field>::Elem::ZERO)
         .expect("all roots");
     assert_eq!(all.len(), 256);
     let none =
-        linearized_roots(&Polynomial::<Gf8>::zero(), <Gf8 as Field>::Elem::ONE).expect("no roots");
+        linearized_roots(&Polynomial::<Gf8B>::zero(), <Gf8B as Field>::Elem::ONE).expect("no roots");
     assert!(none.is_empty());
 }
 
@@ -203,20 +203,20 @@ fn bivariate_with_roots<F: FieldKernels>(seed: u64, roots: &[&[F::Elem]]) -> Vec
 
 #[test]
 fn roth_ruckenstein_finds_planted_roots() {
-    let root_a: Vec<<Gf8 as Field>::Elem> = oracles::noise::<Gf8>(3, 0xC001);
-    let root_b: Vec<<Gf8 as Field>::Elem> = oracles::noise::<Gf8>(2, 0xC002);
-    let rows = bivariate_with_roots::<Gf8>(0xC000, &[&root_a, &root_b]);
+    let root_a: Vec<<Gf8B as Field>::Elem> = oracles::noise::<Gf8B>(3, 0xC001);
+    let root_b: Vec<<Gf8B as Field>::Elem> = oracles::noise::<Gf8B>(2, 0xC002);
+    let rows = bivariate_with_roots::<Gf8B>(0xC000, &[&root_a, &root_b]);
     let found =
         roth_ruckenstein_roots(&rows, 4, univariate::RothRuckensteinLimits::new(10_000, 64))
             .expect("roots");
-    let to_poly = |coefficients: &[<Gf8 as Field>::Elem]| {
-        Polynomial::<Gf8>::from_coefficients(coefficients).expect("planted")
+    let to_poly = |coefficients: &[<Gf8B as Field>::Elem]| {
+        Polynomial::<Gf8B>::from_coefficients(coefficients).expect("planted")
     };
     assert!(found.contains(&to_poly(&root_a)));
     assert!(found.contains(&to_poly(&root_b)));
     // Every returned candidate is a true root of Q(X, f(X)) == 0.
     for candidate in &found {
-        let mut composition = Polynomial::<Gf8>::zero();
+        let mut composition = Polynomial::<Gf8B>::zero();
         for row in rows.iter().rev() {
             composition = composition.multiply(candidate).expect("multiply");
             composition = composition.add(row).expect("add");
@@ -225,7 +225,7 @@ fn roth_ruckenstein_finds_planted_roots() {
     }
     // The empty-rows input is the zero bivariate.
     assert_eq!(
-        roth_ruckenstein_roots::<Gf8>(&[], 2, univariate::RothRuckensteinLimits::new(10_000, 64)),
+        roth_ruckenstein_roots::<Gf8B>(&[], 2, univariate::RothRuckensteinLimits::new(10_000, 64)),
         Err(RootError::ZeroBivariatePolynomial)
     );
 }

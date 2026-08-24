@@ -3,7 +3,7 @@
 
 use fgf::field::Elem;
 use fgf::kernel::FieldKernels;
-use fgf::{FanPaar8, Gf8, Gf16, Gf32};
+use fgf::{FanPaar8, Gf8B, Gf16, Gf32};
 use univariate::{Polynomial, PolynomialError, truncated_eea};
 
 mod oracles;
@@ -91,8 +91,8 @@ impl<F: FieldKernels> TruncateCheck<F> for Polynomial<F> {
 
 #[test]
 fn series_identities_hold_across_fields() {
-    assert_series_identities::<Gf8>();
-    assert_series_identities::<Gf8>();
+    assert_series_identities::<Gf8B>();
+    assert_series_identities::<Gf8B>();
     assert_series_identities::<Gf16>();
     assert_series_identities::<Gf32>();
     assert_series_identities::<FanPaar8>();
@@ -174,8 +174,8 @@ fn monomial<F: FieldKernels>(degree: usize) -> Polynomial<F> {
 
 #[test]
 fn truncated_eea_matches_berlekamp_massey_across_fields() {
-    assert_truncated_eea_identities::<Gf8>();
-    assert_truncated_eea_identities::<Gf8>();
+    assert_truncated_eea_identities::<Gf8B>();
+    assert_truncated_eea_identities::<Gf8B>();
     assert_truncated_eea_identities::<Gf16>();
     assert_truncated_eea_identities::<Gf32>();
 }
