@@ -169,7 +169,9 @@ impl<F: FieldKernels> Polynomial<F> {
     pub fn coefficients(
         &self,
     ) -> impl DoubleEndedIterator<Item = F::Elem> + ExactSizeIterator + '_ {
-        self.coefficients.chunks_exact(F::BYTES).map(F::read)
+        (0..self.coefficients.len())
+            .step_by(F::BYTES)
+            .map(|start| F::read(&self.coefficients[start..start + F::BYTES]))
     }
 
     /// Leading coefficient of a nonzero polynomial.

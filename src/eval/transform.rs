@@ -114,9 +114,9 @@ pub fn evaluate_subspace_into<F: ButterflyKernels>(
     plan.forward_bytes(&mut scratch.rows[..row_bytes], F::BYTES)
         .map_err(transform_length_error)?;
     values.extend(
-        scratch.rows[..row_bytes]
-            .chunks_exact(F::BYTES)
-            .map(F::read),
+        (0..row_bytes)
+            .step_by(F::BYTES)
+            .map(|start| F::read(&scratch.rows[start..start + F::BYTES])),
     );
     Ok(())
 }
@@ -173,9 +173,9 @@ pub fn evaluate_coset_into<F: ButterflyKernels>(
     plan.forward_bytes(&mut scratch.rows[..row_bytes], F::BYTES)
         .map_err(transform_length_error)?;
     values.extend(
-        scratch.rows[..row_bytes]
-            .chunks_exact(F::BYTES)
-            .map(F::read),
+        (0..row_bytes)
+            .step_by(F::BYTES)
+            .map(|start| F::read(&scratch.rows[start..start + F::BYTES])),
     );
     Ok(())
 }
@@ -223,11 +223,8 @@ pub fn interpolate_subspace_into<F: ButterflyKernels>(
         conversion_scratch_elements(size) * F::BYTES,
         "subspace interpolation conversion",
     )?;
-    for (row, &value) in scratch.rows[..row_bytes]
-        .chunks_exact_mut(F::BYTES)
-        .zip(values)
-    {
-        F::write(row, value);
+    for (start, &value) in (0..row_bytes).step_by(F::BYTES).zip(values) {
+        F::write(&mut scratch.rows[start..start + F::BYTES], value);
     }
     inverse_interpolate_bytes::<F>(
         &mut scratch.rows[..row_bytes],

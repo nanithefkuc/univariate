@@ -130,8 +130,8 @@ pub fn karatsuba_multiply<F: FieldKernels>(
 /// Accumulate the packed schoolbook convolution `a · b` into zeroed `dst`.
 fn schoolbook_into<F: FieldKernels>(dst: &mut [u8], a: &[u8], b: &[u8]) {
     debug_assert_eq!(dst.len() + F::BYTES, a.len() + b.len());
-    for (index, chunk) in b.chunks_exact(F::BYTES).enumerate() {
-        let scale = F::read(chunk);
+    for index in 0..b.len() / F::BYTES {
+        let scale = F::read(&b[index * F::BYTES..(index + 1) * F::BYTES]);
         if scale.is_zero() {
             continue;
         }
@@ -223,10 +223,14 @@ fn karatsuba_into<F: FieldKernels>(
 /// XOR one packed operand into another (in-place field addition), matching
 /// element boundaries from the start.
 fn xor_elementwise<F: FieldKernels>(destination: &mut [u8], source: &[u8]) {
-    for (left, right) in destination
-        .chunks_exact_mut(F::BYTES)
-        .zip(source.chunks_exact(F::BYTES))
-    {
+    // Only the common full-element prefix: operands may differ in length,
+    // and the tail of the longer one is left untouched.
+    let full = destination.len().min(source.len()) / F::BYTES;
+    for index in 0..full {
+        let (left, right) = (
+            &mut destination[index * F::BYTES..(index + 1) * F::BYTES],
+            &source[index * F::BYTES..(index + 1) * F::BYTES],
+        );
         for (byte, input) in left.iter_mut().zip(right) {
             *byte ^= input;
         }
