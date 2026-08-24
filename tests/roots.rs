@@ -171,8 +171,8 @@ fn linearized_zero_polynomial_covers_the_field() {
     let all = linearized_roots(&Polynomial::<Gf8B>::zero(), <Gf8B as Field>::Elem::ZERO)
         .expect("all roots");
     assert_eq!(all.len(), 256);
-    let none =
-        linearized_roots(&Polynomial::<Gf8B>::zero(), <Gf8B as Field>::Elem::ONE).expect("no roots");
+    let none = linearized_roots(&Polynomial::<Gf8B>::zero(), <Gf8B as Field>::Elem::ONE)
+        .expect("no roots");
     assert!(none.is_empty());
 }
 
