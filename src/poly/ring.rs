@@ -88,7 +88,8 @@ impl<F: FieldKernels> Polynomial<F> {
         if use_packed_kernel::<F>(self.coefficients.len()) {
             ops::mul_assign::<F>(&mut self.coefficients, scale);
         } else {
-            for coefficient in self.coefficients.chunks_exact_mut(F::BYTES) {
+            for start in (0..self.coefficients.len()).step_by(F::BYTES) {
+                let coefficient = &mut self.coefficients[start..start + F::BYTES];
                 F::write(coefficient, F::read(coefficient).mul(scale));
             }
         }
@@ -460,10 +461,11 @@ impl<F: FieldKernels> Polynomial<F> {
         if use_packed_kernel::<F>(source.len()) {
             ops::mul_add::<F>(destination, scale, source);
         } else {
-            for (output, input) in destination
-                .chunks_exact_mut(F::BYTES)
-                .zip(source.chunks_exact(F::BYTES))
-            {
+            for start in (0..source.len()).step_by(F::BYTES) {
+                let (output, input) = (
+                    &mut destination[start..start + F::BYTES],
+                    &source[start..start + F::BYTES],
+                );
                 F::write(output, F::read(output).add(scale.mul(F::read(input))));
             }
         }
