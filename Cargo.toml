@@ -33,10 +33,10 @@ internals = []
 # Field arithmetic and packed-buffer vector kernels, pinned by rev: a
 # floating dependency is a format-break risk when the dependency feeds wire
 # bytes. Swap this rev with the other ecosystem consumers in the same sitting.
-fgf = { git = "https://github.com/nanithefkuc/fgf", rev = "f9c25a898b96627d71d3b9b35a1bd4b6dc15b247" }
+fgf = { git = "https://github.com/nanithefkuc/fgf", rev = "d5a1fa5f4cf39e666725f0089674093203aeba45" }
 # Additive-FFT transforms for subspace/coset domains, composed (never
 # re-implemented) under the default-on `fft` feature.
-butterfly-fft = { git = "https://github.com/nanithefkuc/butterfly-fft", rev = "c4e45a63875d44237b9710e918556c8a41807dcc", optional = true, default-features = false }
+butterfly-fft = { git = "https://github.com/nanithefkuc/butterfly-fft", rev = "7a682acae356ee2ae99596a16b92ba9b8e5c0451", optional = true, default-features = false }
 rayon = { version = "1", optional = true }
 
 [dev-dependencies]
